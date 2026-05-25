@@ -1,0 +1,2626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Post Share Mini App</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #334155;
+            --text: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #475569;
+            --success: #22c55e;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            overflow-x: hidden;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Animated Background */
+        .bg-animated {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        .bg-animated::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 20% 50%, rgba(37, 99, 235, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+            animation: bgMove 20s ease-in-out infinite;
+        }
+
+        @keyframes bgMove {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-50px, -50px); }
+        }
+
+        /* Container */
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            position: relative;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .header-coins {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        /* Page Wrapper */
+        .page {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Content Area */
+        .content {
+            padding: 20px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            animation: cardPop 0.5s ease-out;
+        }
+
+        @keyframes cardPop {
+            from {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        #perPostIncome {
+            color: var(--success);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-success {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text);
+        }
+
+        /* Input Fields */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-secondary);
+            color: var(--text);
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        /* ── POST CARDS ── */
+        .posts-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        /* Featured / first card */
+        .post-card {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            margin-bottom: 14px;
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            cursor: pointer;
+        }
+        .post-card:active { transform: scale(0.98); }
+
+        /* Thumbnail */
+        .post-thumb {
+            width: 100%;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+            display: block;
+            background: #1e293b;
+        }
+        .post-thumb-placeholder {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: rgba(255,255,255,0.1);
+        }
+
+        /* Quality badge on thumb */
+        .post-quality-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fbbf24;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        /* Episode badge */
+        .post-ep-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--primary);
+            color: white;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        /* Verified overlay */
+        .post-verified-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--success), #059669);
+        }
+
+        /* Body */
+        .post-body {
+            padding: 14px 14px 12px;
+        }
+
+        .post-title {
+            font-size: 1rem;
+            font-weight: 700;
+            line-height: 1.3;
+            margin-bottom: 6px;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .post-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        /* Meta row */
+        .post-meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .post-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 3px 9px;
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .post-chip.highlight { color: var(--primary); border-color: rgba(37,99,235,0.3); background: rgba(37,99,235,0.1); }
+
+        /* Bottom row */
+        .post-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .post-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .post-status.verified { color: var(--success); }
+        .post-status.pending  { color: var(--warning); }
+
+        .post-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-small {
+            padding: 6px 14px;
+            font-size: 0.78rem;
+            border-radius: 8px;
+        }
+
+        /* Posts page header */
+        .posts-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding: 0 4px;
+        }
+        .posts-header-title {
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        .posts-count {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        /* Post detail modal */
+        .post-detail-thumb {
+            width: 100%;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            display: block;
+        }
+        .post-detail-thumb-placeholder {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+        .post-detail-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .post-detail-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+            margin-bottom: 14px;
+        }
+        .post-detail-meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .meta-cell {
+            background: rgba(255,255,255,0.04);
+            border-radius: 10px;
+            padding: 10px 12px;
+        }
+        .meta-cell-label { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+        .meta-cell-val   { font-size: 0.88rem; font-weight: 600; }
+
+        /* Channel Cards */
+        .channel-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .channel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .channel-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: var(--warning);
+            color: white;
+        }
+
+        .status-approved {
+            background: var(--success);
+            color: white;
+        }
+
+        .status-rejected {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 480px;
+            width: 100%;
+            background: var(--bg-card);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            background: rgba(37, 99, 235, 0.1);
+        }
+
+        .nav-icon {
+            font-size: 1.4rem;
+        }
+
+        .nav-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            z-index: 2000;
+            display: none;
+            animation: toastSlide 0.4s ease-out;
+        }
+
+        @keyframes toastSlide {
+            from {
+                transform: translate(-50%, -100px);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        /* ═══════════════════════════════════════
+           WALLET — Premium Redesign
+        ═══════════════════════════════════════ */
+
+        /* Hero balance card */
+        .wallet-hero {
+            position: relative;
+            border-radius: 24px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            padding: 32px 24px 28px;
+            background: linear-gradient(135deg, #0f4c35 0%, #064e3b 40%, #0a2a1e 100%);
+            box-shadow: 0 16px 48px rgba(16,185,129,0.25), 0 4px 12px rgba(0,0,0,0.4);
+        }
+        .wallet-hero::before {
+            content: '';
+            position: absolute;
+            top: -60px; right: -60px;
+            width: 200px; height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(16,185,129,0.25) 0%, transparent 70%);
+        }
+        .wallet-hero::after {
+            content: '';
+            position: absolute;
+            bottom: -40px; left: -40px;
+            width: 160px; height: 160px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(5,150,105,0.2) 0%, transparent 70%);
+        }
+        .wallet-hero-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            position: relative; z-index: 1;
+        }
+        .wallet-hero-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 6px;
+        }
+        .wallet-hero-amount {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1;
+            letter-spacing: -1px;
+        }
+        .wallet-hero-amount span {
+            font-size: 1.6rem;
+            font-weight: 600;
+            opacity: 0.8;
+            margin-right: 4px;
+        }
+        .wallet-hero-currency {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: rgba(255,255,255,0.5);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+        .wallet-hero-badge {
+            background: rgba(16,185,129,0.25);
+            border: 1px solid rgba(16,185,129,0.4);
+            color: #6ee7b7;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+        .wallet-hero-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 14px;
+            overflow: hidden;
+            position: relative; z-index: 1;
+        }
+        .wallet-mini-stat {
+            background: rgba(0,0,0,0.25);
+            padding: 12px 14px;
+            text-align: center;
+        }
+        .wallet-mini-stat:first-child { border-radius: 13px 0 0 13px; }
+        .wallet-mini-stat:last-child  { border-radius: 0 13px 13px 0; }
+        .wms-label {
+            font-size: 0.65rem;
+            color: rgba(255,255,255,0.45);
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .wms-val {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #6ee7b7;
+        }
+
+        /* Quick action row */
+        .wallet-actions-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .wallet-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 18px 12px;
+            border-radius: 16px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+        .wallet-action-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .wallet-action-btn:active { transform: scale(0.96); }
+        .wallet-action-btn.withdraw {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 8px 20px rgba(16,185,129,0.35);
+        }
+        .wallet-action-btn.history {
+            background: var(--bg-card);
+            color: var(--text);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .wallet-action-icon {
+            font-size: 1.6rem;
+            line-height: 1;
+        }
+        .wallet-action-label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        /* ── Broadcast ── */
+        .broadcast-card { padding: 0 !important; overflow: hidden; }
+        .broadcast-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 16px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .broadcast-header-left { display: flex; align-items: center; gap: 12px; }
+        .broadcast-icon-wrap {
+            width: 38px; height: 38px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        .broadcast-badge {
+            background: var(--danger);
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            animation: bcast-pulse 2s infinite;
+        }
+        @keyframes bcast-pulse { 0%,100%{opacity:1;} 50%{opacity:0.6;} }
+        .broadcast-empty {
+            padding: 28px 16px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+        .broadcast-item {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            transition: background 0.2s;
+        }
+        .broadcast-item:last-child { border-bottom: none; }
+        .broadcast-item-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+        .broadcast-type-badge {
+            font-size: 0.62rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 20px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .broadcast-type-update { background:rgba(99,102,241,0.2); color:#818cf8; }
+        .broadcast-type-alert  { background:rgba(239,68,68,0.18);  color:#f87171; }
+        .broadcast-type-info   { background:rgba(34,197,94,0.15);  color:#4ade80; }
+        .broadcast-type-promo  { background:rgba(245,158,11,0.18); color:#fbbf24; }
+        .broadcast-msg {
+            font-size: 0.83rem;
+            line-height: 1.55;
+            color: var(--text-primary);
+            flex: 1;
+        }
+        .broadcast-time {
+            font-size: 0.68rem;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        /* Transaction History */
+        .txn-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .txn-section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .txn-filter-pill {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .txn-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            animation: txnSlide 0.4s ease-out both;
+        }
+        .txn-item:last-child { border-bottom: none; }
+
+        @keyframes txnSlide {
+            from { opacity: 0; transform: translateX(-10px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        .txn-icon-wrap {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        .txn-icon-wrap.credit { background: rgba(34,197,94,0.15); }
+        .txn-icon-wrap.debit  { background: rgba(239,68,68,0.15);  }
+        .txn-icon-wrap.pending { background: rgba(245,158,11,0.15); }
+
+        .txn-info { flex: 1; min-width: 0; }
+        .txn-desc {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 3px;
+        }
+        .txn-meta {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .txn-status-dot {
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .txn-status-dot.credit { background: var(--success); }
+        .txn-status-dot.debit  { background: var(--danger);  }
+        .txn-status-dot.pending { background: var(--warning); }
+
+        .txn-amount {
+            font-size: 1rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .txn-amount.credit { color: var(--success); }
+        .txn-amount.debit  { color: var(--danger);  }
+
+        .txn-extra {
+            margin-top: 10px;
+            margin-left: 52px;
+            background: rgba(255,255,255,0.03);
+            border-left: 2px solid rgba(255,255,255,0.08);
+            border-radius: 0 8px 8px 0;
+            padding: 8px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .txn-detail-row {
+            display: flex;
+            gap: 8px;
+            font-size: 0.72rem;
+            line-height: 1.5;
+        }
+        .txn-detail-key {
+            color: var(--text-secondary);
+            min-width: 72px;
+            flex-shrink: 0;
+        }
+        .txn-detail-val {
+            color: var(--text-primary);
+            font-family: 'Poppins', monospace;
+            word-break: break-all;
+        }
+        .txn-note {
+            color: #f59e0b !important;
+            font-style: italic;
+        }
+        .txn-amount.pending { color: var(--warning); }
+
+        /* Old balance-label (kept for compat) */
+        .balance-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+        .balance-amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        /* Invite Section */
+        .invite-box {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+        }
+
+        .invite-code {
+            background: var(--bg-card);
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            text-align: center;
+            margin: 12px 0;
+            word-break: break-all;
+        }
+
+        /* Admin Specific */
+        .admin-badge {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        /* Responsive */
+        @media (max-width: 380px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            .header h1 {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Method Tab */
+        .method-tab {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+        }
+        .method-tab.active {
+            background: rgba(37,99,235,0.12);
+            border-color: var(--primary);
+            color: var(--text);
+        }
+        .method-tab:hover { border-color: var(--primary); }
+
+        /* Hide scrollbar but keep functionality */
+        .modal-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .modal-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .modal-content::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animated"></div>
+    
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <h1>📱 Post Share App</h1>
+                <div class="header-coins">
+                    <span>💰</span>
+                    <span id="headerBalance">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Page -->
+        <div id="dashboardPage" class="page active">
+            <div class="content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="perPostIncome">₹—</div>
+                        <div class="stat-label">💎 Per Post Income</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="verifiedPosts">0</div>
+                        <div class="stat-label">✅ Verified</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalChannels">0</div>
+                        <div class="stat-label">📢 Channels</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalEarnings">₹0</div>
+                        <div class="stat-label">💵 Earnings</div>
+                    </div>
+                </div>
+
+                <!-- Post Details Channel Button -->
+                <div onclick="openPostDetailsChannel()" style="
+                    position: relative;
+                    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+                    border: 1px solid rgba(255,255,255,0.1);
+                    border-radius: 18px;
+                    padding: 18px 20px;
+                    margin-bottom: 14px;
+                    cursor: pointer;
+                    overflow: hidden;
+                    transition: transform 0.18s, box-shadow 0.18s;
+                    box-shadow: 0 4px 24px rgba(99,102,241,0.18);
+                " onmousedown="this.style.transform='scale(0.98)'" onmouseup="this.style.transform='scale(1)'" ontouchstart="this.style.transform='scale(0.97)'" ontouchend="this.style.transform='scale(1)'">
+
+                    <!-- Glow orbs -->
+                    <div style="position:absolute;top:-30px;right:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(139,92,246,0.35),transparent 70%);pointer-events:none;"></div>
+                    <div style="position:absolute;bottom:-20px;left:10px;width:80px;height:80px;background:radial-gradient(circle,rgba(59,130,246,0.25),transparent 70%);pointer-events:none;"></div>
+
+                    <div style="display:flex;align-items:center;gap:14px;position:relative;">
+
+                        <!-- Icon -->
+                        <div style="
+                            width:52px;height:52px;flex-shrink:0;
+                            background:linear-gradient(135deg,rgba(139,92,246,0.3),rgba(59,130,246,0.3));
+                            border:1px solid rgba(139,92,246,0.4);
+                            border-radius:14px;
+                            display:flex;align-items:center;justify-content:center;
+                            font-size:1.5rem;
+                        ">🎬</div>
+
+                        <!-- Text -->
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-size:1rem;font-weight:800;letter-spacing:-0.2px;margin-bottom:3px;display:flex;align-items:center;gap:8px;">
+                                Post Details
+                                <span style="background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;font-size:0.58rem;font-weight:800;letter-spacing:1.2px;padding:2px 8px;border-radius:20px;text-transform:uppercase;">Live</span>
+                            </div>
+                            <div style="font-size:0.76rem;color:rgba(255,255,255,0.5);line-height:1.5;">
+                                Latest episodes, updates &amp; post info on our Telegram channel
+                            </div>
+                            <!-- Stats row -->
+                            <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
+                                <div style="display:flex;align-items:center;gap:5px;font-size:0.72rem;color:rgba(255,255,255,0.6);">
+                                    <span style="width:7px;height:7px;border-radius:50%;background:#10b981;display:inline-block;box-shadow:0 0 6px #10b981;"></span>
+                                    Active Channel
+                                </div>
+                                <div style="font-size:0.72rem;color:rgba(255,255,255,0.4);">👁 View Posts</div>
+                                <div style="font-size:0.72rem;color:rgba(255,255,255,0.4);">📢 Updates</div>
+                            </div>
+                        </div>
+
+                        <!-- Arrow -->
+                        <div style="
+                            flex-shrink:0;
+                            width:34px;height:34px;
+                            background:rgba(255,255,255,0.08);
+                            border:1px solid rgba(255,255,255,0.1);
+                            border-radius:10px;
+                            display:flex;align-items:center;justify-content:center;
+                            font-size:1rem;color:rgba(255,255,255,0.7);
+                        ">→</div>
+                    </div>
+
+                    <!-- Bottom tag -->
+                    <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;gap:8px;position:relative;">
+                        <div style="width:20px;height:20px;background:#2AABEE;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;flex-shrink:0;">✈️</div>
+                        <div style="font-size:0.72rem;color:rgba(255,255,255,0.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">t.me/+mFva4xdrwlgwNjA1</div>
+                        <div style="margin-left:auto;font-size:0.68rem;font-weight:700;color:#8b5cf6;flex-shrink:0;">Open →</div>
+                    </div>
+                </div>
+
+                <div class="card broadcast-card">
+                    <div class="broadcast-header">
+                        <div class="broadcast-header-left">
+                            <div class="broadcast-icon-wrap">📢</div>
+                            <div>
+                                <div class="card-title" style="margin-bottom:2px;">Announcements</div>
+                                <div style="font-size:0.7rem;color:var(--text-secondary);">Admin broadcasts & updates</div>
+                            </div>
+                        </div>
+                        <div class="broadcast-badge" id="broadcastUnreadBadge" style="display:none;">New</div>
+                    </div>
+                    <div id="broadcastList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Channels Page -->
+        <div id="channelsPage" class="page">
+            <div class="content">
+                <div class="posts-header" style="margin-bottom: 16px;">
+                    <div class="posts-header-title">📢 My Channels</div>
+                    <div class="posts-count" id="channelsCountBadge">0 channels</div>
+                </div>
+                <button class="btn btn-primary" onclick="openModal('addChannelModal')" style="margin-bottom: 20px;">
+                    📢 Add Channel
+                </button>
+                <div id="channelsList"></div>
+            </div>
+        </div>
+
+        <!-- Wallet Page -->
+        <div id="walletPage" class="page">
+            <div class="content">
+
+                <!-- Hero Balance Card -->
+                <div class="wallet-hero">
+                    <div class="wallet-hero-top">
+                        <div>
+                            <div class="wallet-hero-label">Total Balance</div>
+                            <div class="wallet-hero-amount"><span>₹</span><span id="walletBalance">0</span></div>
+                            <div class="wallet-hero-currency">Indian Rupee · INR</div>
+                        </div>
+                        <div class="wallet-hero-badge">🔐 Secure</div>
+                    </div>
+                    <div class="wallet-hero-stats">
+                        <div class="wallet-mini-stat">
+                            <div class="wms-label">Total Earned</div>
+                            <div class="wms-val" id="totalEarnedWallet">₹0</div>
+                        </div>
+                        <div class="wallet-mini-stat">
+                            <div class="wms-label">Withdrawn</div>
+                            <div class="wms-val" id="totalWithdrawnWallet">₹0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Action Buttons -->
+                <div class="wallet-actions-row">
+                    <button class="wallet-action-btn withdraw" onclick="openModal('withdrawModal')">
+                        <div class="wallet-action-icon">💸</div>
+                        <div class="wallet-action-label">Withdraw</div>
+                    </button>
+                    <button class="wallet-action-btn history" onclick="document.getElementById('txnSection').scrollIntoView({behavior:'smooth'})">
+                        <div class="wallet-action-icon">📊</div>
+                        <div class="wallet-action-label">History</div>
+                    </button>
+                </div>
+
+                <!-- Transaction History -->
+                <div class="card" id="txnSection">
+                    <div class="txn-section-header">
+                        <div class="txn-section-title">Transaction History</div>
+                        <div class="txn-filter-pill" id="txnCount">All</div>
+                    </div>
+                    <div id="transactionsList"></div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Profile Page -->
+        <div id="profilePage" class="page">
+            <div class="content">
+                <div class="card">
+                    <div class="card-title">Profile Info</div>
+                    <div style="margin-bottom: 16px;">
+                        <div class="form-label">User ID</div>
+                        <div id="userId" style="color: var(--primary); font-weight: 600;">-</div>
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <div class="form-label">Name</div>
+                        <div id="userName" style="font-weight: 500;">-</div>
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <div class="form-label">Registered</div>
+                        <div id="userJoined" style="color: var(--text-secondary);">-</div>
+                    </div>
+                </div>
+
+                <button class="btn btn-danger" onclick="logout()">
+                    🚪 Logout
+                </button>
+            </div>
+        </div>
+
+        <!-- Admin Page -->
+        <div id="adminPage" class="page">
+            <div class="content">
+                <div class="card" style="text-align: center; margin-bottom: 20px;">
+                    <span class="admin-badge">👑 ADMIN PANEL</span>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Pending Channels</div>
+                    <div id="pendingChannels"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">All Users</div>
+                    <div id="allUsers"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="switchPage('dashboardPage')">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-label">Home</div>
+            </div>
+            <div class="nav-item" onclick="switchPage('channelsPage')">
+                <div class="nav-icon">📢</div>
+                <div class="nav-label">Channels</div>
+            </div>
+            <div class="nav-item" onclick="switchPage('walletPage')">
+                <div class="nav-icon">💰</div>
+                <div class="nav-label">Wallet</div>
+            </div>
+            <div class="nav-item" onclick="switchPage('profilePage')">
+                <div class="nav-icon">👤</div>
+                <div class="nav-label">Profile</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Post Modal -->
+    <div id="addPostModal" class="modal">
+        <div class="modal-content" style="width:92vw;max-width:440px;">
+            <div class="modal-header">
+                <div class="modal-title">🎬 New Post</div>
+                <button class="modal-close" onclick="closeModal('addPostModal')">✕</button>
+            </div>
+
+            <!-- Thumb preview -->
+            <div id="mThumbWrap" style="margin-bottom:14px;display:none;">
+                <img id="mThumbImg" src="" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:10px;">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">🖼️ Thumbnail URL</label>
+                <input type="url" id="postThumbnail" class="form-input" placeholder="https://..." oninput="previewMThumb(this.value)">
+            </div>
+            <div class="form-group">
+                <label class="form-label">🎬 Video Title <span style="color:var(--danger)">*</span></label>
+                <input type="text" id="postTitle" class="form-input" placeholder="e.g. Money Heist S05">
+            </div>
+            <div class="form-group">
+                <label class="form-label">📝 Description</label>
+                <textarea id="postDescription" class="form-textarea" style="min-height:70px;" placeholder="Short description..."></textarea>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div class="form-group">
+                    <label class="form-label">🔢 Episode No</label>
+                    <input type="text" id="postEpisode" class="form-input" placeholder="e.g. 5">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">⏱️ Runtime</label>
+                    <input type="text" id="postRuntime" class="form-input" placeholder="e.g. 45 min">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">🎭 Genre</label>
+                    <input type="text" id="postGenre" class="form-input" placeholder="e.g. Thriller">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">📺 Quality</label>
+                    <select id="postQuality" class="form-input" style="padding:11px 10px;">
+                        <option value="">— Select —</option>
+                        <option value="4K">4K</option>
+                        <option value="1080p">1080p</option>
+                        <option value="720p">720p</option>
+                        <option value="480p">480p</option>
+                        <option value="360p">360p</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">🔗 Episode Link</label>
+                <input type="url" id="postLink" class="form-input" placeholder="https://t.me/...">
+            </div>
+            <button class="btn btn-primary" onclick="addPost()">
+                ➕ Publish Post
+            </button>
+        </div>
+    </div>
+
+    <!-- Add Channel Modal -->
+    <div id="addChannelModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Add Channels</div>
+                <button class="modal-close" onclick="closeModal('addChannelModal')">✕</button>
+            </div>
+            <div id="channelLinksContainer">
+                <div class="form-group channel-link-row">
+                    <label class="form-label">Telegram Channel Link #1</label>
+                    <input type="text" class="form-input channel-link-input" placeholder="https://t.me/yourchannel">
+                </div>
+            </div>
+            <button class="btn btn-secondary" onclick="addChannelLinkField()" style="margin-bottom: 12px;">
+                ➕ Add Another Channel
+            </button>
+            <button class="btn btn-primary" onclick="submitChannels()">
+                📢 Submit All
+            </button>
+        </div>
+    </div>
+
+    <!-- Post Detail Modal -->
+    <div id="postDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">📋 Post Detail</div>
+                <button class="modal-close" onclick="closeModal('postDetailModal')">✕</button>
+            </div>
+            <div id="postDetailBody"></div>
+        </div>
+    </div>
+
+    <!-- Withdraw Modal — Professional -->
+    <div id="withdrawModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">💸 Withdraw Funds</div>
+                <button class="modal-close" onclick="closeModal('withdrawModal')">✕</button>
+            </div>
+
+            <!-- Amount -->
+            <div class="form-group">
+                <label class="form-label">Withdrawal Amount (₹)</label>
+                <div style="position:relative;">
+                    <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:1.1rem;font-weight:700;color:var(--text-secondary);">₹</span>
+                    <input type="number" id="withdrawAmount" class="form-input" placeholder="Enter amount" style="padding-left:34px;font-size:1.1rem;font-weight:700;" min="1">
+                </div>
+                <div style="font-size:0.72rem;color:var(--text-secondary);margin-top:5px;">Minimum withdrawal: ₹50 · Processed within 24–48 hrs</div>
+            </div>
+
+            <!-- Payment Method Tabs -->
+            <div class="form-group">
+                <label class="form-label">Payment Method</label>
+                <div id="methodTabs" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">
+                    <div class="method-tab active" onclick="selectMethod('upi',this)" data-method="upi">
+                        <div style="font-size:1.4rem;margin-bottom:4px;">📱</div>
+                        <div style="font-size:0.72rem;font-weight:700;">UPI</div>
+                    </div>
+                    <div class="method-tab" onclick="selectMethod('bank',this)" data-method="bank">
+                        <div style="font-size:1.4rem;margin-bottom:4px;">🏦</div>
+                        <div style="font-size:0.72rem;font-weight:700;">Bank</div>
+                    </div>
+                    <div class="method-tab" onclick="selectMethod('paytm',this)" data-method="paytm">
+                        <div style="font-size:1.4rem;margin-bottom:4px;">💙</div>
+                        <div style="font-size:0.72rem;font-weight:700;">Paytm</div>
+                    </div>
+                </div>
+                <input type="hidden" id="paymentMethod" value="upi">
+            </div>
+
+            <!-- UPI Fields -->
+            <div id="fields-upi">
+                <div class="form-group">
+                    <label class="form-label">UPI ID</label>
+                    <input type="text" class="form-input wd-field" data-key="upiId" placeholder="yourname@upi (e.g. 9876543210@paytm)">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Registered Name</label>
+                    <input type="text" class="form-input wd-field" data-key="upiName" placeholder="Full name on UPI account">
+                </div>
+                <div style="background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.2);border-radius:10px;padding:10px 12px;font-size:0.75rem;color:var(--text-secondary);margin-bottom:16px;">
+                    ℹ️ Supported: PhonePe, Google Pay, Paytm, BHIM, any UPI handle
+                </div>
+            </div>
+
+            <!-- Bank Transfer Fields -->
+            <div id="fields-bank" style="display:none;">
+                <div class="form-group">
+                    <label class="form-label">Account Holder Name</label>
+                    <input type="text" class="form-input wd-field" data-key="bankName" placeholder="Full name as on bank account">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Account Number</label>
+                    <input type="text" class="form-input wd-field" data-key="bankAcc" placeholder="e.g. 000123456789" inputmode="numeric">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">IFSC Code</label>
+                    <input type="text" class="form-input wd-field" data-key="bankIFSC" placeholder="e.g. SBIN0001234" style="text-transform:uppercase;">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Bank Name</label>
+                    <input type="text" class="form-input wd-field" data-key="bankBankName" placeholder="e.g. State Bank of India">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Account Type</label>
+                    <select class="form-input wd-field" data-key="bankType">
+                        <option value="savings">Savings</option>
+                        <option value="current">Current</option>
+                    </select>
+                </div>
+                <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:10px 12px;font-size:0.75rem;color:var(--text-secondary);margin-bottom:16px;">
+                    ℹ️ NEFT/IMPS transfer · Credited within 1–2 working days
+                </div>
+            </div>
+
+            <!-- Paytm Fields -->
+            <div id="fields-paytm" style="display:none;">
+                <div class="form-group">
+                    <label class="form-label">Paytm Mobile Number</label>
+                    <input type="tel" class="form-input wd-field" data-key="paytmMobile" placeholder="10-digit mobile linked to Paytm" maxlength="10" inputmode="numeric">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Registered Name</label>
+                    <input type="text" class="form-input wd-field" data-key="paytmName" placeholder="Name on Paytm account">
+                </div>
+                <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:10px 12px;font-size:0.75rem;color:var(--text-secondary);margin-bottom:16px;">
+                    ℹ️ Instant transfer to Paytm wallet or linked bank
+                </div>
+            </div>
+
+            <button class="btn btn-success" onclick="requestWithdraw()" style="margin-top:4px;">
+                💸 Submit Withdrawal Request
+            </button>
+        </div>
+    </div>
+
+    <!-- Verify Post Modal -->
+    <div id="verifyPostModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">Verify Post</div>
+                <button class="modal-close" onclick="closeModal('verifyPostModal')">✕</button>
+            </div>
+            <div id="verifyPostContent"></div>
+            <div class="form-group">
+                <label class="form-label">Reward (₹)</label>
+                <input type="number" id="postReward" class="form-input" placeholder="0" value="10">
+            </div>
+            <button class="btn btn-success" onclick="verifyPost()">
+                ✅ Verify
+            </button>
+        </div>
+    </div>
+
+    <!-- Demo Post Detail Modal -->
+    <div id="demoPostDetailModal" class="modal">
+        <div class="modal-content" style="width:94vw;max-width:460px;padding:0;overflow:hidden;border-radius:20px;">
+
+            <!-- Thumbnail -->
+            <div style="position:relative;">
+                <img src="https://i.imgur.com/sVnglhH.jpeg"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+                     style="width:100%;aspect-ratio:16/9;object-fit:cover;display:block;" alt="Solo Leveling S2">
+                <div style="display:none;width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,#1a0030,#0a001a);align-items:center;justify-content:center;font-size:4rem;">⚔️</div>
+                <div style="position:absolute;bottom:0;left:0;right:0;height:80px;background:linear-gradient(transparent,rgba(0,0,0,0.85));"></div>
+                <button onclick="closeModal('demoPostDetailModal')"
+                    style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);border:none;color:#fff;width:34px;height:34px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+                <span style="position:absolute;top:12px;left:12px;background:var(--primary);color:#fff;font-size:0.68rem;font-weight:800;padding:4px 10px;border-radius:6px;letter-spacing:0.5px;">EP 01</span>
+                <span style="position:absolute;bottom:12px;left:12px;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.15);color:#fbbf24;font-size:0.68rem;font-weight:800;letter-spacing:1px;padding:4px 10px;border-radius:6px;">1080p</span>
+                <span style="position:absolute;bottom:12px;right:12px;background:rgba(239,68,68,0.85);color:#fff;font-size:0.68rem;font-weight:800;padding:4px 10px;border-radius:6px;">🔥 NEW</span>
+            </div>
+
+            <!-- Body -->
+            <div style="padding:18px 18px 22px;">
+                <div style="font-size:1.2rem;font-weight:800;line-height:1.3;margin-bottom:4px;letter-spacing:-0.3px;">Solo Leveling: Reawakening</div>
+                <div style="font-size:0.85rem;color:var(--warning);font-weight:600;margin-bottom:14px;">Season 2 · Episode 01 — "The Monarchs Begin" · हिंदी डब</div>
+
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;">
+                    <span class="post-chip highlight">⚔️ Action</span>
+                    <span class="post-chip highlight">🧙 Fantasy</span>
+                    <span class="post-chip">🎌 Anime</span>
+                    <span class="post-chip">🏆 Award Winning</span>
+                    <span class="post-chip">2025</span>
+                </div>
+
+                <div class="post-detail-meta-grid" style="margin-bottom:14px;">
+                    <div class="meta-cell">
+                        <div class="meta-cell-label">Status</div>
+                        <div class="meta-cell-val" style="color:#10b981;">✅ Ongoing</div>
+                    </div>
+                    <div class="meta-cell">
+                        <div class="meta-cell-label">Season / Episode</div>
+                        <div class="meta-cell-val">S2 · EP 01 / 13</div>
+                    </div>
+                    <div class="meta-cell">
+                        <div class="meta-cell-label">Runtime</div>
+                        <div class="meta-cell-val">⏱ 23 min</div>
+                    </div>
+                    <div class="meta-cell">
+                        <div class="meta-cell-label">Quality</div>
+                        <div class="meta-cell-val" style="color:#fbbf24;">🌟 1080p HD</div>
+                    </div>
+                    <div class="meta-cell">
+                        <div class="meta-cell-label">Audio</div>
+                        <div class="meta-cell-val" style="color:var(--primary);">🔊 Hindi Dub</div>
+                    </div>
+                    <div class="meta-cell">
+                        <div class="meta-cell-label">Subtitles</div>
+                        <div class="meta-cell-val">Hindi / English</div>
+                    </div>
+                    <div class="meta-cell">
+                        <div class="meta-cell-label">Studio</div>
+                        <div class="meta-cell-val">A-1 Pictures</div>
+                    </div>
+                    <div class="meta-cell">
+                        <div class="meta-cell-label">Released</div>
+                        <div class="meta-cell-val">Jan 2025</div>
+                    </div>
+                </div>
+
+                <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;margin-bottom:14px;">
+                    <div style="font-size:0.68rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">📖 Synopsis</div>
+                    <div style="font-size:0.82rem;color:var(--text-secondary);line-height:1.75;">
+                        Sung Jin-Woo, now the true Shadow Monarch, faces his greatest challenge as ancient Monarchs awaken across the world. In this explosive Season 2 premiere, boundaries between hunters and monsters collapse — and only one can stand at the summit. A must-watch for all anime fans! 🔥
+                    </div>
+                </div>
+
+                <div style="background:rgba(37,99,235,0.1);border:1px solid rgba(37,99,235,0.25);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:0.6rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">✪ Channel Link to Share</div>
+                        <div style="font-size:0.8rem;color:var(--primary);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">https://t.me/AliBaba_Loot_Dealssss</div>
+                    </div>
+                    <button onclick="copyDemoLink()"
+                        style="flex-shrink:0;background:var(--primary);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;transition:all 0.2s;">
+                        📋 Copy
+                    </button>
+                </div>
+
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:10px;">
+                    <div style="display:flex;align-items:center;gap:6px;font-size:0.8rem;font-weight:700;color:var(--warning);">⏳ Pending Verification</div>
+                    <div style="font-size:0.72rem;color:var(--text-secondary);">👁 Share to earn coins</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-app-compat.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-auth-compat.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-firestore-compat.min.js"></script>
+
+    <script>
+        // ═══════════════════════════════════════════════════
+        //  FIREBASE CONFIGURATION
+        //  Replace all "YOUR_..." values with your actual
+        //  Firebase project credentials from:
+        //  Firebase Console → Project Settings → Your Apps
+        // ═══════════════════════════════════════════════════
+        const firebaseConfig = {
+            apiKey: "AIzaSyCTGgB8m2gudpkpe405MQYbU270miPMB_c",
+            authDomain: "post-share-2977a.firebaseapp.com",
+            projectId: "post-share-2977a",
+            storageBucket: "post-share-2977a.firebasestorage.app",
+            messagingSenderId: "705936786631",
+            appId: "1:705936786631:web:107ec1c12f373c4cc72ae2",
+            measurementId: "G-7CV9D35Z17"
+        };
+
+        // ═══════════════════════════════════════════════════
+        //  INITIALIZE FIREBASE
+        // ═══════════════════════════════════════════════════
+        firebase.initializeApp(firebaseConfig);
+
+        // ── Firebase services ──────────────────────────────────────────
+        const auth = firebase.auth();
+        const db   = firebase.firestore();
+
+        // ── Firestore shorthand helpers ────────────────────────────────
+        const col    = (path)     => db.collection(path);
+        const getDoc = (c, id)    => db.collection(c).doc(id);
+        const ts     = ()         => firebase.firestore.FieldValue.serverTimestamp();
+        const incr   = (n)        => firebase.firestore.FieldValue.increment(n);
+
+        // Current User
+        let currentUser = null;
+        let isAdmin = false;
+
+        // Admin User ID (set this to your Telegram user ID)
+        const ADMIN_USER_ID = "YOUR_ADMIN_TELEGRAM_ID";
+
+        // Initialize App
+        // ── Auth state listener ────────────────────────────────────────────
+        let authReady = false;
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                authReady   = true;
+                loginWithTelegram(user);
+            } else {
+                authReady = false;
+                // Not signed in — do anonymous sign-in
+                auth.signInAnonymously().catch(err => {
+                    console.error('Anonymous auth failed:', err);
+                });
+            }
+        });
+
+        // Telegram Web App Login — called after auth is confirmed ready
+        function loginWithTelegram(firebaseUser) {
+            if (window.Telegram && window.Telegram.WebApp) {
+                const tgUser = window.Telegram.WebApp.initDataUnsafe?.user;
+                if (tgUser) {
+                    const userId   = tgUser.id.toString();
+                    const userName = tgUser.first_name + (tgUser.last_name ? ' ' + tgUser.last_name : '');
+                    saveUserData(userId, userName);
+                } else {
+                    // Telegram WebApp loaded but no user data yet
+                    saveUserData('tg_user_' + firebaseUser.uid.slice(0,6), 'Telegram User');
+                }
+            } else {
+                // Browser / dev mode
+                saveUserData('demo_' + firebaseUser.uid.slice(0,6), 'Demo User');
+            }
+        }
+
+        // Save User Data
+        function saveUserData(userId, userName) {
+            const userRef = getDoc('users', auth.currentUser.uid);
+            userRef.get().then(snapshot => {
+                if (!snapshot.exists) {
+                    userRef.set({
+                        telegramId: userId,
+                        name: userName,
+                        balance: 0,
+                        joinedAt: Date.now(),
+                        inviteCode: generateInviteCode()
+                    });
+                }
+                loadUserData();
+            });
+        }
+
+        // Load User Data
+        function loadUserData() {
+            const userRef = getDoc('users', auth.currentUser.uid);
+            userRef.onSnapshot(snapshot => {
+                const userData = snapshot.data();
+                if (userData) {
+                    // Check if admin
+                    isAdmin = userData.telegramId === ADMIN_USER_ID;
+                    
+                    // Update UI
+                    document.getElementById('userId').textContent = userData.telegramId;
+                    document.getElementById('userName').textContent = userData.name;
+                    document.getElementById('userJoined').textContent = new Date(userData.joinedAt).toLocaleDateString('en-US');
+                    document.getElementById('walletBalance').textContent = userData.balance || 0;
+                    document.getElementById('headerBalance').textContent = '₹' + (userData.balance || 0);
+                    // Per Post Income
+                    const ppiEl = document.getElementById('perPostIncome');
+                    if (ppiEl) {
+                        const income = userData.perPostIncome;
+                        if (income !== null && income !== undefined) {
+                            ppiEl.textContent = '₹' + income;
+                            ppiEl.style.color = 'var(--success)';
+                        } else {
+                            ppiEl.textContent = '₹—';
+                            ppiEl.style.color = 'var(--text-secondary)';
+                        }
+                    }
+                    document.getElementById('inviteLink').textContent = window.location.origin + '?ref=' + userData.inviteCode;
+
+                    // Show/hide admin nav (only add once)
+                    if (isAdmin && !document.getElementById('adminNavBtn')) {
+                        const adminNav = document.createElement('div');
+                        adminNav.id = 'adminNavBtn';
+                        adminNav.className = 'nav-item';
+                        adminNav.innerHTML = `
+                            <div class="nav-icon">👑</div>
+                            <div class="nav-label">Admin</div>
+                        `;
+                        adminNav.onclick = () => switchPage('adminPage');
+                        document.querySelector('.bottom-nav').appendChild(adminNav);
+                    }
+
+                    // Only attach listeners once
+                    if (!window._listenersAttached) {
+                        window._listenersAttached = true;
+                        loadDashboard();
+                        loadChannels();
+                        loadTransactions();
+                        if (isAdmin) loadAdminData();
+                    }
+                }
+            });
+        }
+
+        // Load Dashboard
+        function loadDashboard() {
+            // Per Post Income pulled from loadUserData onSnapshot (no duplicate listener)
+
+            // Verified posts count
+            col('posts').get().then(snapshot => {
+                let verified = 0;
+                snapshot.forEach(docSnap => {
+                    const post = docSnap.data();
+                    if (post.verifiedUsers && post.verifiedUsers[auth.currentUser.uid]) verified++;
+                });
+                document.getElementById('verifiedPosts').textContent = verified;
+            });
+
+            col('channels').where('userId','==',auth.currentUser.uid).onSnapshot(snapshot => {
+                document.getElementById('totalChannels').textContent = snapshot.size;
+            });
+
+            // totalEarnings synced from loadUserData onSnapshot
+
+            // Load broadcasts
+            loadBroadcasts();
+        }
+
+        // Load Broadcast Messages
+        function loadBroadcasts() {
+            col('broadcasts').orderBy('timestamp','desc').limit(10).onSnapshot(snapshot => {
+                const list = document.getElementById('broadcastList');
+                if (!list) return;
+
+                if (snapshot.empty) {
+                    list.innerHTML = '<div class="broadcast-empty">📭 কোনো announcement নেই</div>';
+                    document.getElementById('broadcastUnreadBadge').style.display = 'none';
+                    return;
+                }
+
+                const entries = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+
+                // Show "New" badge if latest message is within 24 hours
+                const latest = entries[0];
+                const latestTs = latest.timestamp?.toMillis ? latest.timestamp.toMillis() : (latest.timestamp || 0);
+                const isNew  = (Date.now() - latestTs) < 86400000;
+                const badge  = document.getElementById('broadcastUnreadBadge');
+                if (badge) badge.style.display = isNew ? 'block' : 'none';
+
+                const typeLabels = { update:'🔄 Update', alert:'🚨 Alert', info:'ℹ️ Info', promo:'🎁 Promo' };
+
+                list.innerHTML = entries.map(msg => {
+                    const ts2   = msg.timestamp?.toDate ? msg.timestamp.toDate() : new Date(msg.timestamp || 0);
+                    const dateStr = ts2.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+                    const timeStr = ts2.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:true });
+                    const type    = msg.type || 'info';
+                    const label   = typeLabels[type] || 'ℹ️ Info';
+
+                    return `
+                    <div class="broadcast-item">
+                        <div class="broadcast-item-top">
+                            <div class="broadcast-msg">${msg.message || ''}</div>
+                            <span class="broadcast-type-badge broadcast-type-${type}">${label}</span>
+                        </div>
+                        <div class="broadcast-time">🕐 ${dateStr} · ${timeStr}</div>
+                    </div>`;
+                }).join('');
+            });
+        }
+
+        // Build Post Card HTML
+        function buildPostCard(id, post, isVerified) {
+            const title   = post.title       || 'Untitled';
+            const desc    = post.description || post.content || '';
+            const thumb   = post.thumbnail   || '';
+            const quality = post.quality     || '';
+            const ep      = post.episode     ? 'EP ' + post.episode : '';
+            const runtime = post.runtime     || '';
+            const date    = post.createdAt   ? new Date(post.createdAt).toLocaleDateString('en-US') : '';
+
+            const thumbHtml = thumb
+                ? `<img class="post-thumb" src="${thumb}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" loading="lazy">
+                   <div class="post-thumb-placeholder" style="display:none;">🎬</div>`
+                : `<div class="post-thumb-placeholder">🎬</div>`;
+
+            return `
+            <div class="post-card" onclick="openPostDetail('${id}')">
+                ${isVerified ? '<div class="post-verified-overlay"></div>' : ''}
+                <div style="position:relative;">
+                    ${thumbHtml}
+                    ${quality ? `<span class="post-quality-badge">${quality}</span>` : ''}
+                    ${ep      ? `<span class="post-ep-badge">${ep}</span>`           : ''}
+                </div>
+                <div class="post-body">
+                    <div class="post-title">${title}</div>
+                    ${desc ? `<div class="post-desc">${desc}</div>` : ''}
+                    <div class="post-meta-row">
+                        ${runtime ? `<span class="post-chip">⏱ ${runtime}</span>`                   : ''}
+                        ${date    ? `<span class="post-chip">📅 ${date}</span>`                     : ''}
+                        ${post.genre ? `<span class="post-chip highlight">🎭 ${post.genre}</span>` : ''}
+                    </div>
+                    <div class="post-bottom">
+                        <div class="post-status ${isVerified ? 'verified' : 'pending'}">
+                            ${isVerified ? '✅ Verified' : '⏳ Pending'}
+                        </div>
+                        <div class="post-actions">
+                            ${!isVerified ? `<button class="btn btn-secondary btn-small" onclick="event.stopPropagation();copyPostContent('${id}')">📋 Copy</button>` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        // Open Post Detail Modal
+        function openPostDetail(id) {
+            getDoc('posts', id).get().then(snap => {
+                const post = snap.data();
+                if (!post) return;
+                const isVerified = post.verifiedUsers && post.verifiedUsers[auth.currentUser.uid];
+                const thumb   = post.thumbnail   || '';
+                const title   = post.title       || 'Untitled';
+                const desc    = post.description || post.content || '';
+                const quality = post.quality     || '—';
+                const ep      = post.episode     || '—';
+                const runtime = post.runtime     || '—';
+                const genre   = post.genre       || '—';
+                const date    = post.createdAt   ? new Date(post.createdAt).toLocaleDateString('en-US') : '—';
+
+                const thumbHtml = thumb
+                    ? `<img class="post-detail-thumb" src="${thumb}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                       <div class="post-detail-thumb-placeholder" style="display:none;">🎬</div>`
+                    : `<div class="post-detail-thumb-placeholder">🎬</div>`;
+
+                document.getElementById('postDetailBody').innerHTML = `
+                    ${thumbHtml}
+                    <div class="post-detail-title">${title}</div>
+                    ${desc ? `<div class="post-detail-desc">${desc}</div>` : ''}
+                    <div class="post-detail-meta-grid">
+                        <div class="meta-cell"><div class="meta-cell-label">Episode</div><div class="meta-cell-val">${ep}</div></div>
+                        <div class="meta-cell"><div class="meta-cell-label">Quality</div><div class="meta-cell-val" style="color:var(--warning);">${quality}</div></div>
+                        <div class="meta-cell"><div class="meta-cell-label">Runtime</div><div class="meta-cell-val">${runtime}</div></div>
+                        <div class="meta-cell"><div class="meta-cell-label">Genre</div><div class="meta-cell-val">${genre}</div></div>
+                        <div class="meta-cell" style="grid-column:span 2;"><div class="meta-cell-label">Date Posted</div><div class="meta-cell-val">${date}</div></div>
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                        ${post.link ? `<a href="${post.link}" target="_blank" class="btn btn-success" style="flex:1;text-decoration:none;text-align:center;">🔗 Watch / Download</a>` : ''}
+                        ${!isVerified ? `<button class="btn btn-primary" style="flex:1;" onclick="copyPostContent('${id}')">📋 Copy Content</button>` : ''}
+                        <div class="post-status ${isVerified ? 'verified' : 'pending'}" style="display:flex;align-items:center;gap:5px;font-size:0.85rem;padding:0 8px;">
+                            ${isVerified ? '✅ Verified' : '⏳ Pending'}
+                        </div>
+                    </div>
+                `;
+                openModal('postDetailModal');
+            });
+        }
+
+        // Copy post content by ID
+        function copyPostContent(id) {
+            getDoc('posts', id).get().then(snap => {
+                const post = snap.data();
+                if (!post) return;
+                const text = post.content || post.description || post.title || '';
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(text).then(() => showToast('Post copied! 📋'));
+                } else {
+                    const ta = document.createElement('textarea');
+                    ta.value = text; document.body.appendChild(ta);
+                    ta.select(); document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    showToast('Post copied! 📋');
+                }
+            });
+        }
+
+        // loadPosts() removed — Posts page removed from mini app
+
+        // Load Channels
+        function loadChannels() {
+            col('channels').where('userId','==',auth.currentUser.uid).onSnapshot(snapshot => {
+                const channelsList = document.getElementById('channelsList');
+                channelsList.innerHTML = '';
+
+                const count = snapshot.size;
+                const badge = document.getElementById('channelsCountBadge');
+                if (badge) badge.textContent = count + ' channel' + (count !== 1 ? 's' : '');
+
+                if (snapshot.empty) {
+                    channelsList.innerHTML = '<div class="empty-state"><div class="empty-icon">📢</div><p>No channels yet</p></div>';
+                    return;
+                }
+
+                snapshot.forEach(docSnap => {
+                    const channel = docSnap.data();
+                    const statusMap = {
+                        approved: ['status-approved','Approved'],
+                        rejected: ['status-rejected','Rejected'],
+                        pending:  ['status-pending', 'Pending']
+                    };
+                    const [statusClass, statusText] = statusMap[channel.status] || statusMap.pending;
+                    let dateStr = '-';
+                    if (channel.submittedAt && channel.submittedAt.toDate) {
+                        dateStr = channel.submittedAt.toDate().toLocaleDateString('en-IN');
+                    } else if (channel.submittedAtMs) {
+                        dateStr = new Date(channel.submittedAtMs).toLocaleDateString('en-IN');
+                    }
+
+                    channelsList.innerHTML += `
+                        <div class="channel-card">
+                            <div class="channel-header">
+                                <a href="${channel.link}" target="_blank" class="channel-link">${channel.link}</a>
+                                <span class="status-badge ${statusClass}">${statusText}</span>
+                            </div>
+                            <div style="font-size:0.85rem;color:var(--text-secondary);">${dateStr}</div>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        // Load Transactions
+        function loadTransactions() {
+            col('transactions').where('userId','==',auth.currentUser.uid)
+                .limit(100).onSnapshot(snapshot => {
+                const transactionsList = document.getElementById('transactionsList');
+                transactionsList.innerHTML = '';
+
+                if (snapshot.empty) {
+                    transactionsList.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><p>No transactions yet</p></div>';
+                    document.getElementById('txnCount').textContent = '0 records';
+                    const teEl = document.getElementById('totalEarnedWallet');
+                    const twEl = document.getElementById('totalWithdrawnWallet');
+                    if (teEl) teEl.textContent = '₹0';
+                    if (twEl) twEl.textContent = '₹0';
+                    return;
+                }
+
+                const entries = snapshot.docs
+                    .map(d => [d.id, d.data()])
+                    .sort(([,a],[,b]) => {
+                        const ta = a.timestamp?.toMillis ? a.timestamp.toMillis() : (a.timestamp || 0);
+                        const tb = b.timestamp?.toMillis ? b.timestamp.toMillis() : (b.timestamp || 0);
+                        return tb - ta;
+                    });
+                document.getElementById('txnCount').textContent = entries.length + ' records';
+
+                let totalEarned = 0;
+                let totalWithdrawn = 0;
+
+                entries.forEach(([id, tx], index) => {
+                    const isCredit   = tx.type === 'credit';
+                    const isPending  = tx.status === 'pending';
+                    const isApproved = tx.status === 'approved';
+                    const isRejected = tx.status === 'rejected';
+
+                    // Icon & colour class
+                    let typeClass, icon;
+                    if (isPending)       { typeClass = 'pending'; icon = '⏳'; }
+                    else if (isRejected) { typeClass = 'debit';   icon = '❌'; }
+                    else if (isCredit)   { typeClass = 'credit';  icon = '💰'; }
+                    else                 { typeClass = 'debit';   icon = '💸'; }
+
+                    const tsDate  = tx.timestamp?.toDate ? tx.timestamp.toDate() : new Date(tx.timestamp || 0);
+                    const dateStr = tsDate.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+                    const timeStr = tsDate.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12: true });
+
+                    if (isCredit && !isRejected) totalEarned    += tx.amount;
+                    if (!isCredit)               totalWithdrawn += tx.amount;
+
+                    // Status badge label
+                    let statusLabel, statusColor;
+                    if (isPending)       { statusLabel = '⏳ Pending';   statusColor = '#f59e0b'; }
+                    else if (isApproved) { statusLabel = '✅ Approved';  statusColor = '#22c55e'; }
+                    else if (isRejected) { statusLabel = '❌ Rejected';  statusColor = '#ef4444'; }
+                    else if (isCredit)   { statusLabel = '✅ Credited';  statusColor = '#22c55e'; }
+                    else                 { statusLabel = '⬇️ Debited';   statusColor = '#ef4444'; }
+
+                    // Extra details block
+                    let extraRows = '';
+
+                    // Withdrawal method & account details
+                    if (tx.method) {
+                        const methodLabel = tx.method.toUpperCase();
+                        extraRows += `<div class="txn-detail-row"><span class="txn-detail-key">Method</span><span class="txn-detail-val">${methodLabel}</span></div>`;
+                    }
+                    if (tx.accountDetails) {
+                        try {
+                            const acc = typeof tx.accountDetails === 'string' ? JSON.parse(tx.accountDetails) : tx.accountDetails;
+                            if (acc.upiId)       extraRows += `<div class="txn-detail-row"><span class="txn-detail-key">UPI ID</span><span class="txn-detail-val">${acc.upiId}</span></div>`;
+                            if (acc.paytmNumber) extraRows += `<div class="txn-detail-row"><span class="txn-detail-key">Paytm No.</span><span class="txn-detail-val">${acc.paytmNumber}</span></div>`;
+                            if (acc.accountNumber) extraRows += `<div class="txn-detail-row"><span class="txn-detail-key">Acc. No.</span><span class="txn-detail-val">${acc.accountNumber}</span></div>`;
+                            if (acc.ifsc)        extraRows += `<div class="txn-detail-row"><span class="txn-detail-key">IFSC</span><span class="txn-detail-val">${acc.ifsc}</span></div>`;
+                            if (acc.accountName) extraRows += `<div class="txn-detail-row"><span class="txn-detail-key">Name</span><span class="txn-detail-val">${acc.accountName}</span></div>`;
+                        } catch(e) {}
+                    }
+
+                    // Admin note (if any)
+                    if (tx.adminNote) {
+                        extraRows += `<div class="txn-detail-row"><span class="txn-detail-key">Note</span><span class="txn-detail-val txn-note">${tx.adminNote}</span></div>`;
+                    }
+
+                    transactionsList.innerHTML += `
+                        <div class="txn-item" style="animation-delay:${index * 0.04}s; flex-direction:column; gap:0;">
+                            <div style="display:flex;align-items:center;gap:12px;">
+                                <div class="txn-icon-wrap ${typeClass}">${icon}</div>
+                                <div class="txn-info" style="flex:1;">
+                                    <div class="txn-desc">${tx.description || (isCredit ? 'Credit' : 'Withdrawal')}</div>
+                                    <div class="txn-meta">
+                                        <span class="txn-status-dot ${typeClass}"></span>
+                                        <span style="color:${statusColor};font-weight:600;font-size:0.72rem;">${statusLabel}</span>
+                                        <span style="color:var(--text-secondary);">·</span>
+                                        <span>${dateStr}</span>
+                                        <span style="color:var(--text-secondary);">·</span>
+                                        <span>${timeStr}</span>
+                                    </div>
+                                </div>
+                                <div class="txn-amount ${isRejected ? 'debit' : typeClass}" style="${isRejected ? 'text-decoration:line-through;opacity:0.6;' : ''}">
+                                    ${isCredit ? '+' : '-'}₹${parseFloat(tx.amount).toFixed(2)}
+                                </div>
+                            </div>
+                            ${extraRows ? `<div class="txn-extra">${extraRows}</div>` : ''}
+                        </div>
+                    `;
+                });
+
+                const teEl = document.getElementById('totalEarnedWallet');
+                const twEl = document.getElementById('totalWithdrawnWallet');
+                if (teEl) teEl.textContent = '₹' + totalEarned.toFixed(0);
+                if (twEl) twEl.textContent = '₹' + totalWithdrawn.toFixed(0);
+            });
+        }
+
+        // Add Post (Admin Only)
+        function addPost() {
+            if (!isAdmin) {
+                showToast('Only admin can add posts!');
+                return;
+            }
+
+            const title       = (document.getElementById('postTitle')?.value || '').trim();
+            const thumbnail   = (document.getElementById('postThumbnail')?.value || '').trim();
+            const description = (document.getElementById('postDescription')?.value || '').trim();
+            const episode     = (document.getElementById('postEpisode')?.value || '').trim();
+            const runtime     = (document.getElementById('postRuntime')?.value || '').trim();
+            const genre       = (document.getElementById('postGenre')?.value || '').trim();
+            const quality     = (document.getElementById('postQuality')?.value || '').trim();
+            const link        = (document.getElementById('postLink')?.value || '').trim();
+
+            if (!title) {
+                showToast('Please enter a video title!');
+                return;
+            }
+
+            const postData = { title, createdAt: Date.now(), createdBy: auth.currentUser.uid };
+            if (thumbnail)   postData.thumbnail   = thumbnail;
+            if (description) postData.description = description;
+            if (episode)     postData.episode     = episode;
+            if (runtime)     postData.runtime     = runtime;
+            if (genre)       postData.genre       = genre;
+            if (quality)     postData.quality     = quality;
+            if (link)        postData.link        = link;
+
+            col('posts').add(postData).then(() => {
+                showToast('Post published! ✅');
+                // reset
+                ['postTitle','postThumbnail','postDescription','postEpisode',
+                 'postRuntime','postGenre','postLink'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = '';
+                });
+                const ql = document.getElementById('postQuality');
+                if (ql) ql.value = '';
+                const mw = document.getElementById('mThumbWrap');
+                if (mw) mw.style.display = 'none';
+                closeModal('addPostModal');
+            });
+        }
+
+        function previewMThumb(url) {
+            const wrap = document.getElementById('mThumbWrap');
+            const img  = document.getElementById('mThumbImg');
+            if (!wrap || !img) return;
+            if (url && url.startsWith('http')) {
+                img.src = url;
+                wrap.style.display = 'block';
+                img.onerror = () => { wrap.style.display = 'none'; };
+            } else {
+                wrap.style.display = 'none';
+            }
+        }
+
+        // Add another channel link field
+        function addChannelLinkField() {
+            const container = document.getElementById('channelLinksContainer');
+            const count = container.querySelectorAll('.channel-link-row').length + 1;
+            const div = document.createElement('div');
+            div.className = 'form-group channel-link-row';
+            div.innerHTML = `
+                <label class="form-label" style="display:flex;justify-content:space-between;">
+                    <span>Telegram Channel Link #${count}</span>
+                    <span onclick="this.closest('.channel-link-row').remove()" style="cursor:pointer;color:var(--danger);">✕ Remove</span>
+                </label>
+                <input type="text" class="form-input channel-link-input" placeholder="https://t.me/yourchannel">
+            `;
+            container.appendChild(div);
+        }
+
+        // Submit Multiple Channels
+        function submitChannels() {
+            // Wait for auth to be ready — just retry after short delay
+            if (!auth.currentUser) {
+                showToast('❌ Login হয়নি! একটু অপেক্ষা করে আবার try করো।');
+                return;
+            }
+
+            const inputs = document.querySelectorAll('.channel-link-input');
+            const links  = Array.from(inputs).map(i => i.value.trim()).filter(l => l);
+
+            if (links.length === 0) {
+                showToast('কমপক্ষে একটা channel link দাও!');
+                return;
+            }
+
+            const invalid = links.filter(l => !l.startsWith('http') && !l.includes('t.me'));
+            if (invalid.length > 0) {
+                showToast('Valid Telegram link দাও (t.me দিয়ে শুরু)!');
+                return;
+            }
+
+            const btn = document.querySelector('#addChannelModal .btn-primary');
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Submitting...'; }
+
+            const uid = auth.currentUser.uid;
+            const promises = links.map(link =>
+                db.collection('channels').add({
+                    userId:      uid,
+                    link:        link,
+                    status:      'pending',
+                    submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+                })
+            );
+
+            Promise.all(promises)
+                .then(() => {
+                    showToast(links.length + ' channel submit হয়েছে! ✅');
+                    const container = document.getElementById('channelLinksContainer');
+                    const rows = container.querySelectorAll('.channel-link-row');
+                    rows.forEach((row, i) => {
+                        if (i === 0) row.querySelector('input').value = '';
+                        else row.remove();
+                    });
+                    closeModal('addChannelModal');
+                })
+                .catch(err => {
+                    console.error('Channel submit error:', err);
+                    showToast('Error! আবার try করো। (' + err.code + ')');
+                })
+                .finally(() => {
+                    if (btn) { btn.disabled = false; btn.textContent = '📤 Submit All'; }
+                });
+        }
+
+        // Select Payment Method
+        function selectMethod(method, el) {
+            document.getElementById('paymentMethod').value = method;
+            document.querySelectorAll('.method-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            ['upi','bank','paytm'].forEach(m => {
+                document.getElementById('fields-' + m).style.display = (m === method) ? 'block' : 'none';
+            });
+        }
+
+        // Request Withdrawal
+        function requestWithdraw() {
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            const method = document.getElementById('paymentMethod').value;
+
+            if (!amount || amount <= 0) { showToast('Please enter a valid amount!'); return; }
+            if (amount < 50) { showToast('Minimum withdrawal is ₹50!'); return; }
+
+            const activeFields = document.querySelectorAll('#fields-' + method + ' .wd-field');
+            const details = {};
+            let allFilled = true;
+            activeFields.forEach(f => {
+                const val = f.value.trim();
+                if (!val) allFilled = false;
+                details[f.dataset.key] = val;
+            });
+            if (!allFilled) { showToast('Please fill all required fields!'); return; }
+
+            if (method === 'upi' && !details.upiId.includes('@')) {
+                showToast('Please enter a valid UPI ID (e.g. name@upi)'); return;
+            }
+            if (method === 'paytm' && details.paytmMobile && details.paytmMobile.length !== 10) {
+                showToast('Enter valid 10-digit Paytm mobile!'); return;
+            }
+
+            const uid = auth.currentUser.uid;
+            const btn = document.querySelector('#withdrawModal .btn-success');
+
+            getDoc('users', uid).get().then(snapshot => {
+                const balance = snapshot.data()?.balance || 0;
+                if (amount > balance) {
+                    showToast('Insufficient balance! Available: ' + balance.toFixed(0));
+                    return null;
+                }
+                if (btn) { btn.disabled = true; btn.textContent = 'Processing...'; }
+
+                const batch = db.batch();
+                const now = Date.now();
+                const withdrawRef = col('withdrawals').doc();
+                const txRef = col('transactions').doc();
+
+                batch.set(withdrawRef, {
+                    userId: uid, amount: amount, method: method,
+                    accountDetails: JSON.stringify(details),
+                    status: 'pending', txnId: txRef.id,
+                    requestedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    requestedAtMs: now
+                });
+                batch.set(txRef, {
+                    userId: uid, type: 'debit', amount: amount,
+                    description: 'Withdrawal Request - ' + method.toUpperCase(),
+                    method: method, accountDetails: JSON.stringify(details),
+                    status: 'pending', withdrawalId: withdrawRef.id,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                batch.update(getDoc('users', uid), {
+                    balance: firebase.firestore.FieldValue.increment(-amount),
+                    totalWithdrawn: firebase.firestore.FieldValue.increment(amount)
+                });
+                return batch.commit();
+            }).then(result => {
+                if (result === null || result === undefined) return;
+                showToast('Withdrawal request submitted! ✅');
+                closeModal('withdrawModal');
+                document.getElementById('withdrawAmount').value = '';
+                document.querySelectorAll('.wd-field').forEach(f => { if (f.tagName !== 'SELECT') f.value = ''; });
+            }).catch(err => {
+                showToast('Error: ' + (err.message || err.code));
+            }).finally(() => {
+                if (btn) { btn.disabled = false; btn.textContent = 'Submit Withdrawal Request'; }
+            });
+        }
+
+        // Copy Post
+        function copyPost(content) {
+            navigator.clipboard.writeText(content).then(() => {
+                showToast('Post copied! 📋');
+            });
+        }
+
+        // Copy Invite Link
+        function copyInviteLink() {
+            const link = document.getElementById('inviteLink').textContent;
+            navigator.clipboard.writeText(link).then(() => {
+                showToast('Link copied! 📋');
+            });
+        }
+
+        // Open Verify Modal
+        function openVerifyModal(postId, content) {
+            document.getElementById('verifyPostContent').innerHTML = `
+                <div class="post-card">
+                    <div class="post-content">${content}</div>
+                </div>
+            `;
+            window.currentVerifyPostId = postId;
+            openModal('verifyPostModal');
+        }
+
+        // Verify Post (Admin)
+        function verifyPost() {
+            const reward = parseFloat(document.getElementById('postReward').value) || 10;
+            const postId = window.currentVerifyPostId;
+
+            col('channels').where('status','==','approved').get().then(snapshot => {
+                if (snapshot.empty) return;
+                const batch = db.batch();
+                const userIds = [...new Set(snapshot.docs.map(d => d.data().userId))];
+
+                // Mark verified users on post
+                const postRef = getDoc('posts', postId);
+                const verifiedMap = {};
+                userIds.forEach(uid => { verifiedMap[uid] = true; });
+                batch.update(postRef, { verifiedUsers: verifiedMap });
+
+                // Credit each user
+                userIds.forEach(uid => {
+                    batch.update(getDoc('users', uid), { balance: incr(reward) });
+                    col('transactions').add({
+                        userId: uid,
+                        type: 'credit',
+                        amount: reward,
+                        description: 'Post Verification Reward',
+                        timestamp: ts()
+                    });
+                });
+
+                batch.commit().then(() => {
+                    showToast('Post verified successfully! ✅');
+                    closeModal('verifyPostModal');
+                });
+            });
+        }
+
+        // Delete Post (Admin)
+        function deletePost(postId) {
+            if (confirm('Are you sure you want to delete this post?')) {
+                getDoc('posts', postId).delete().then(() => {
+                    showToast('Post deleted!');
+                });
+            }
+        }
+
+        // Load Admin Data
+        function loadAdminData() {
+            // Load pending channels
+            col('channels').where('status','==','pending').onSnapshot(snapshot => {
+                const pendingList = document.getElementById('pendingChannels');
+                pendingList.innerHTML = '';
+
+                if (snapshot.empty) {
+                    pendingList.innerHTML = '<div class="empty-state"><div class="empty-icon">✅</div><p>No pending channels</p></div>';
+                    return;
+                }
+
+                snapshot.forEach(docSnap => {
+                    const channel = docSnap.data();
+                    getDoc('users', channel.userId).get().then(userSnap => {
+                        const user = userSnap.data();
+                        pendingList.innerHTML += `
+                            <div class="channel-card">
+                                <div style="margin-bottom:8px;"><strong>User:</strong> ${user ? user.name : 'Unknown'}</div>
+                                <div style="margin-bottom:12px;">
+                                    <a href="${channel.link}" target="_blank" class="channel-link">${channel.link}</a>
+                                </div>
+                                <div class="post-actions">
+                                    <button class="btn btn-success btn-small" onclick="approveChannel('${docSnap.id}')">✅ Approve</button>
+                                    <button class="btn btn-danger btn-small" onclick="rejectChannel('${docSnap.id}')">❌ Reject</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                });
+            });
+
+            // Load all users
+            col('users').orderBy('joinedAt','desc').limit(10).onSnapshot(snapshot => {
+                const usersList = document.getElementById('allUsers');
+                usersList.innerHTML = '';
+                if (snapshot.empty) return;
+                snapshot.forEach(docSnap => {
+                    const user = docSnap.data();
+                    usersList.innerHTML += `
+                        <div class="channel-card">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <div>
+                                    <div style="font-weight:600;margin-bottom:4px;">${user.name}</div>
+                                    <div style="font-size:0.85rem;color:var(--text-secondary);">
+                                        ID: ${user.telegramId} | Balance: ₹${user.balance || 0}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        // Approve Channel (Admin)
+        function approveChannel(channelId) {
+            getDoc('channels', channelId).update({
+                status: 'approved',
+                approvedAt: ts()
+            }).then(() => {
+                showToast('Channel approved! ✅');
+            });
+        }
+
+        // Reject Channel (Admin)
+        function rejectChannel(channelId) {
+            getDoc('channels', channelId).update({
+                status: 'rejected',
+                rejectedAt: ts()
+            }).then(() => {
+                showToast('Channel rejected! ❌');
+            });
+        }
+
+        // Generate Invite Code
+        function generateInviteCode() {
+            return 'REF' + Math.random().toString(36).substr(2, 8).toUpperCase();
+        }
+
+        function openDemoPostDetail() {
+            openModal('demoPostDetailModal');
+        }
+
+        function openPostDetailsChannel() {
+            const channelUrl = 'https://t.me/+mFva4xdrwlgwNjA1';
+            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.openLink) {
+                window.Telegram.WebApp.openLink(channelUrl);
+            } else {
+                window.open(channelUrl, '_blank');
+            }
+        }
+
+        function copyDemoLink() {
+            const link = 'https://t.me/AliBaba_Loot_Dealssss';
+            const btn  = document.getElementById('demoCopyBtn');
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(link).then(() => {
+                    btn.textContent = '✅ Copied!';
+                    btn.style.background = 'var(--success)';
+                    setTimeout(() => { btn.textContent = '📋 Copy'; btn.style.background = 'var(--primary)'; }, 2000);
+                });
+            } else {
+                const ta = document.createElement('textarea');
+                ta.value = link; document.body.appendChild(ta); ta.select();
+                document.execCommand('copy'); document.body.removeChild(ta);
+                btn.textContent = '✅ Copied!';
+                btn.style.background = 'var(--success)';
+                setTimeout(() => { btn.textContent = '📋 Copy'; btn.style.background = 'var(--primary)'; }, 2000);
+            }
+        }
+
+        // Switch Page
+        function switchPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+            
+            document.getElementById(pageId).classList.add('active');
+            event.currentTarget.classList.add('active');
+            
+            window.scrollTo(0, 0);
+        }
+
+        // Modal Functions
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Toast Notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Logout
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                auth.signOut();
+                location.reload();
+            }
+        }
+
+        // Close modal on background click
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
